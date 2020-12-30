@@ -39,7 +39,7 @@ class AudioKeyboard {
     ']': 22,
     '\\': 24,
   };
-  private transposeWidth: number = 0;
+  public transposeWidth: number = 0;
   private activeChannels: { [key: string]: AudioKeyboardChannel } = {};
 
   public constructor(channelCount: number) {
@@ -57,7 +57,7 @@ class AudioKeyboard {
       return;
     }
     let step: number = AudioKeyboard.KEY_STEP_MAP[key];
-    let frequency: number = AudioKeyboardChannel.stepToFrequency(step);
+    let frequency: number = AudioKeyboardChannel.stepToFrequency(step + this.transposeWidth);
     let channel: AudioKeyboardChannel | null = AudioKeyboardChannel.getInstance();
     if (channel === null) {
       return;

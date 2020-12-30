@@ -16,7 +16,7 @@ class AudioKeyboard {
             return;
         }
         let step = AudioKeyboard.KEY_STEP_MAP[key];
-        let frequency = AudioKeyboardChannel.stepToFrequency(step);
+        let frequency = AudioKeyboardChannel.stepToFrequency(step + this.transposeWidth);
         let channel = AudioKeyboardChannel.getInstance();
         if (channel === null) {
             return;
