@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2019",
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "alwaysStrict": true,
+    "strict": true,
+    "outDir": "js"
+  },
+  "include": ["ts/**/*.ts"]
+}
