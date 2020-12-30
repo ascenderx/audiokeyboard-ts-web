@@ -12,6 +12,26 @@ class AudioKeyboardChannel {
     static stepToFrequency(step, baseFrequency = AudioKeyboardChannel.NOTE_A4) {
         return baseFrequency * (2 ** (step / 12));
     }
+    static generatePool(size, waveform = 'sine') {
+        if (size < 1) {
+            throw `Invalid pool size ${size}. Must be a positive number.`;
+        }
+        for (let c = 0; c < size; c++) {
+            let channel = new AudioKeyboardChannel();
+            channel.waveform = waveform;
+            AudioKeyboardChannel.POOL.push(channel);
+        }
+        this.POOL_INITIALIZED = true;
+    }
+    static getInstance() {
+        return AudioKeyboardChannel.POOL.pop() || null;
+    }
+    static returnInstance(channel) {
+        AudioKeyboardChannel.POOL.push(channel);
+    }
+    static get poolSize() {
+        return AudioKeyboardChannel.POOL.length;
+    }
     get enabled() {
         return this._enabled;
     }
@@ -88,3 +108,5 @@ AudioKeyboardChannel.NOTE_A4 = 440;
 AudioKeyboardChannel.MIN_VOLUME = 0.00001;
 AudioKeyboardChannel.MAX_VOLUME = 1.00000;
 AudioKeyboardChannel.CONTEXT = null;
+AudioKeyboardChannel.POOL_INITIALIZED = false;
+AudioKeyboardChannel.POOL = [];

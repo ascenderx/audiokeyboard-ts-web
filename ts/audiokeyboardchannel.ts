@@ -3,6 +3,8 @@ class AudioKeyboardChannel {
   public static readonly MIN_VOLUME = 0.00001;
   public static readonly MAX_VOLUME = 1.00000;
   private static CONTEXT: AudioContext | null = null; 
+  private static POOL_INITIALIZED: boolean = false;
+  private static POOL: AudioKeyboardChannel[] = [];
   private oscillator: OscillatorNode | null = null;
   private gain: GainNode | null = null;
   private _enabled: boolean = false;
@@ -14,6 +16,32 @@ class AudioKeyboardChannel {
   public static stepToFrequency(step: number, baseFrequency: number = AudioKeyboardChannel.NOTE_A4): number {
     return baseFrequency * (2**(step/12));
   }
+
+  public static generatePool(size: number, waveform: OscillatorType = 'sine'): void {
+    if (size < 1) {
+      throw `Invalid pool size ${size}. Must be a positive number.`;
+    }
+
+    for (let c = 0; c < size; c++) {
+      let channel: AudioKeyboardChannel = new AudioKeyboardChannel();
+      channel.waveform = waveform;
+      AudioKeyboardChannel.POOL.push(channel);
+    }
+
+    this.POOL_INITIALIZED = true;
+  }
+
+  public static getInstance(): AudioKeyboardChannel | null {
+    return AudioKeyboardChannel.POOL.pop() || null;
+  }
+
+  public static returnInstance(channel: AudioKeyboardChannel): void {
+    AudioKeyboardChannel.POOL.push(channel);
+  }
+
+  public static get poolSize(): number {
+    return AudioKeyboardChannel.POOL.length;
+  } 
 
   public get enabled(): boolean {
     return this._enabled;

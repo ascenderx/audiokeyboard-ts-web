@@ -2,16 +2,11 @@
 class AudioKeyboard {
     constructor(channelCount) {
         this.transposeWidth = 0;
-        this.channelPool = [];
         this.activeChannels = {};
         if (channelCount < 1) {
             throw `Invalid channel count "${channelCount}". Must be a positive integer.`;
         }
-        for (let c = 0; c < channelCount; c++) {
-            let channel = new AudioKeyboardChannel();
-            channel.waveform = 'square';
-            this.channelPool.push(channel);
-        }
+        AudioKeyboardChannel.generatePool(channelCount, 'square');
     }
     playKeyNote(key, volume = AudioKeyboardChannel.MAX_VOLUME) {
         if (!(key in AudioKeyboard.KEY_STEP_MAP)) {
@@ -22,8 +17,8 @@ class AudioKeyboard {
         }
         let step = AudioKeyboard.KEY_STEP_MAP[key];
         let frequency = AudioKeyboardChannel.stepToFrequency(step);
-        let channel = this.channelPool.pop();
-        if (channel === undefined) {
+        let channel = AudioKeyboardChannel.getInstance();
+        if (channel === null) {
             return;
         }
         this.activeChannels[key] = channel;
@@ -39,7 +34,7 @@ class AudioKeyboard {
             return;
         }
         let channel = this.activeChannels[key];
-        this.channelPool.push(channel);
+        AudioKeyboardChannel.returnInstance(channel);
         delete this.activeChannels[key];
         channel.silence();
     }

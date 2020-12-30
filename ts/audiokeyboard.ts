@@ -40,18 +40,13 @@ class AudioKeyboard {
     '\\': 24,
   };
   private transposeWidth: number = 0;
-  private channelPool: Array<AudioKeyboardChannel> = [];
   private activeChannels: { [key: string]: AudioKeyboardChannel } = {};
 
   public constructor(channelCount: number) {
     if (channelCount < 1) {
       throw `Invalid channel count "${channelCount}". Must be a positive integer.`;
     }
-    for (let c = 0; c < channelCount; c++) {
-      let channel: AudioKeyboardChannel = new AudioKeyboardChannel();
-      channel.waveform = 'square';
-      this.channelPool.push(channel);
-    }
+    AudioKeyboardChannel.generatePool(channelCount, 'square');
   }
 
   public playKeyNote(key: string, volume: number = AudioKeyboardChannel.MAX_VOLUME): void {
@@ -63,8 +58,8 @@ class AudioKeyboard {
     }
     let step: number = AudioKeyboard.KEY_STEP_MAP[key];
     let frequency: number = AudioKeyboardChannel.stepToFrequency(step);
-    let channel: AudioKeyboardChannel | undefined = this.channelPool.pop();
-    if (channel === undefined) {
+    let channel: AudioKeyboardChannel | null = AudioKeyboardChannel.getInstance();
+    if (channel === null) {
       return;
     }
     this.activeChannels[key] = channel;
@@ -81,7 +76,7 @@ class AudioKeyboard {
       return;
     }
     let channel = this.activeChannels[key];
-    this.channelPool.push(channel);
+    AudioKeyboardChannel.returnInstance(channel);
     delete this.activeChannels[key];
     channel.silence();
   }
