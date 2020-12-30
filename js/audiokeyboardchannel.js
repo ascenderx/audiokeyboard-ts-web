@@ -8,6 +8,7 @@ class AudioKeyboardChannel {
         this._volume = AudioKeyboardChannel.MIN_VOLUME;
         this._silenced = true;
         this._waveform = "sine";
+        this.key = null;
     }
     static stepToFrequency(step, baseFrequency = AudioKeyboardChannel.NOTE_A4) {
         return baseFrequency * (2 ** (step / 12));

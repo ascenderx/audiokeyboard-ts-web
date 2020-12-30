@@ -12,6 +12,7 @@ class AudioKeyboardChannel {
   private _volume: number = AudioKeyboardChannel.MIN_VOLUME;
   private _silenced: boolean = true;
   private _waveform: OscillatorType = "sine";
+  public key: string | null = null;
 
   public static stepToFrequency(step: number, baseFrequency: number = AudioKeyboardChannel.NOTE_A4): number {
     return baseFrequency * (2**(step/12));

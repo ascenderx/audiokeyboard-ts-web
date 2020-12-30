@@ -1,83 +1,54 @@
 class AudioKeyboard {
-  public static readonly KEY_STEP_MAP: { [key: string]: number } = {
-    'z': -9,
-    's': -8,
-    'x': -7,
-    'd': -6,
-    'c': -5,
-    'v': -4,
-    'g': -3,
-    'b': -2,
-    'h': -1,
-    'n': 0,
-    'j': 1,
-    'm': 2,
-    ',': 3,
-    'l': 4,
-    '.': 5,
-    ';': 6,
-    '/': 7,
-    'q': 3,
-    '2': 4,
-    'w': 5,
-    '3': 6,
-    'e': 7,
-    'r': 8,
-    '5': 9,
-    't': 10,
-    '6': 11,
-    'y': 12,
-    '7': 13,
-    'u': 14,
-    'i': 15,
-    '9': 16,
-    'o': 17,
-    '0': 18,
-    'p': 19,
-    '[': 20,
-    '=': 21,
-    ']': 22,
-    '\\': 24,
-  };
+  public readonly keyStepMap: { [key: string]: number } = {}; 
   public transposeWidth: number = 0;
-  private activeChannels: { [key: string]: AudioKeyboardChannel } = {};
+  private activeChannels: AudioKeyboardChannel[] = [];
 
-  public constructor(channelCount: number) {
+  public constructor(channelCount: number, keyStepMap: { [key: string]: number } = {}) {
     if (channelCount < 1) {
       throw `Invalid channel count "${channelCount}". Must be a positive integer.`;
     }
     AudioKeyboardChannel.generatePool(channelCount, 'square');
+    for (let key in keyStepMap) {
+      this.keyStepMap[key] = keyStepMap[key];
+    }
   }
 
   public playKeyNote(key: string, volume: number = AudioKeyboardChannel.MAX_VOLUME): void {
-    if (!(key in AudioKeyboard.KEY_STEP_MAP)) {
+    if (!(key in this.keyStepMap)) {
       throw `Key ${key} is not bound to a note.`;
     }
-    if (key in this.activeChannels) {
-      return;
+    for (let channel of this.activeChannels) {
+      if (channel.key === key) {
+        return;
+      }
     }
-    let step: number = AudioKeyboard.KEY_STEP_MAP[key];
+    let step: number = this.keyStepMap[key];
     let frequency: number = AudioKeyboardChannel.stepToFrequency(step + this.transposeWidth);
-    let channel: AudioKeyboardChannel | null = AudioKeyboardChannel.getInstance();
+    let channel: AudioKeyboardChannel | null = AudioKeyboardChannel.getInstance()
+      || this.activeChannels.shift()
+      || null;
     if (channel === null) {
       return;
     }
-    this.activeChannels[key] = channel;
+    this.activeChannels.push(channel);
     channel.enabled = true;
+    channel.key = key;
     channel.frequency = frequency;
     channel.volume = volume;
   }
 
   public releaseKeyNote(key: string): void {
-    if (!(key in AudioKeyboard.KEY_STEP_MAP)) {
+    if (!(key in this.keyStepMap)) {
       throw `Key ${key} is not bound to a note.`;
     }
-    if (!(key in this.activeChannels)) {
-      return;
+    for (let c = 0; c < this.activeChannels.length; c++) {
+      let channel = this.activeChannels[c];
+      if (channel.key === key) { 
+        channel.silence();
+        AudioKeyboardChannel.returnInstance(channel);
+        this.activeChannels.splice(c, 1);
+        return;
+      }
     }
-    let channel = this.activeChannels[key];
-    AudioKeyboardChannel.returnInstance(channel);
-    delete this.activeChannels[key];
-    channel.silence();
   }
 }
