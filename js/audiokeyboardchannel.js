@@ -6,32 +6,46 @@ class AudioKeyboardChannel {
         this._enabled = false;
         this._frequency = 0;
         this._volume = AudioKeyboardChannel.MIN_VOLUME;
-        this._silenced = true;
-        this._waveform = "sine";
+        this._active = false;
         this.key = null;
     }
     static stepToFrequency(step, baseFrequency = AudioKeyboardChannel.NOTE_A4) {
         return baseFrequency * (2 ** (step / 12));
     }
-    static generatePool(size, waveform = 'sine') {
+    static generatePool(size) {
         if (size < 1) {
             throw `Invalid pool size ${size}. Must be a positive number.`;
         }
         for (let c = 0; c < size; c++) {
             let channel = new AudioKeyboardChannel();
-            channel.waveform = waveform;
             AudioKeyboardChannel.POOL.push(channel);
         }
-        this.POOL_INITIALIZED = true;
     }
     static getInstance() {
-        return AudioKeyboardChannel.POOL.pop() || null;
+        for (let channel of AudioKeyboardChannel.POOL) {
+            if (!channel._active) {
+                channel._active = true;
+                return channel;
+            }
+        }
+        return null;
     }
     static returnInstance(channel) {
-        AudioKeyboardChannel.POOL.push(channel);
+        channel._active = false;
     }
-    static get poolSize() {
+    static get POOL_SIZE() {
         return AudioKeyboardChannel.POOL.length;
+    }
+    static get WAVEFORM() {
+        return AudioKeyboardChannel._WAVEFORM;
+    }
+    static set WAVEFORM(value) {
+        for (let channel of AudioKeyboardChannel.POOL) {
+            if (channel.oscillator !== null) {
+                channel.oscillator.type = value;
+            }
+        }
+        AudioKeyboardChannel._WAVEFORM = value;
     }
     get enabled() {
         return this._enabled;
@@ -45,7 +59,7 @@ class AudioKeyboardChannel {
             this.gain = AudioKeyboardChannel.CONTEXT.createGain();
             this.oscillator.connect(this.gain);
             this.oscillator.frequency.value = this._frequency;
-            this.oscillator.type = this._waveform;
+            this.oscillator.type = AudioKeyboardChannel._WAVEFORM;
             this.gain.connect(AudioKeyboardChannel.CONTEXT.destination);
             this.gain.gain.value = this._volume;
             this.oscillator.start();
@@ -54,7 +68,7 @@ class AudioKeyboardChannel {
             if (this.oscillator !== null) {
                 this.oscillator.stop();
             }
-            this._silenced = true;
+            this._active = true;
             this.oscillator = null;
             this.gain = null;
         }
@@ -84,7 +98,6 @@ class AudioKeyboardChannel {
         if (this.gain !== null) {
             this.gain.gain.value = value;
         }
-        this._silenced = value === AudioKeyboardChannel.MIN_VOLUME;
     }
     silence() {
         if (!this._enabled) {
@@ -92,22 +105,13 @@ class AudioKeyboardChannel {
         }
         this.volume = AudioKeyboardChannel.MIN_VOLUME;
     }
-    get silenced() {
-        return this._silenced;
-    }
-    get waveform() {
-        return this._waveform;
-    }
-    set waveform(value) {
-        this._waveform = value;
-        if (this.oscillator !== null) {
-            this.oscillator.type = value;
-        }
+    get active() {
+        return this._active;
     }
 }
 AudioKeyboardChannel.NOTE_A4 = 440;
 AudioKeyboardChannel.MIN_VOLUME = 0.00001;
 AudioKeyboardChannel.MAX_VOLUME = 1.00000;
 AudioKeyboardChannel.CONTEXT = null;
-AudioKeyboardChannel.POOL_INITIALIZED = false;
 AudioKeyboardChannel.POOL = [];
+AudioKeyboardChannel._WAVEFORM = "sine";

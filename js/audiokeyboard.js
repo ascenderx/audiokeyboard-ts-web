@@ -7,7 +7,8 @@ class AudioKeyboard {
         if (channelCount < 1) {
             throw `Invalid channel count "${channelCount}". Must be a positive integer.`;
         }
-        AudioKeyboardChannel.generatePool(channelCount, 'square');
+        AudioKeyboardChannel.WAVEFORM = "square";
+        AudioKeyboardChannel.generatePool(channelCount);
         for (let key in keyStepMap) {
             this.keyStepMap[key] = keyStepMap[key];
         }
