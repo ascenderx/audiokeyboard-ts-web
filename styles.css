@@ -1,0 +1,80 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.keyboard {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 200px;
+}
+
+.key-octave-container {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  width: calc(100% / 3);
+  height: 100%;
+}
+
+.key-octave-white, .key-octave-black {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.key-octave-white {
+  height: 100%;
+}
+
+.key-octave-black {
+  height: 60%;
+}
+
+.key-white, .key-black {
+  height: 100%;
+  border: 1px solid black;
+  cursor: pointer;
+}
+
+.key-white {
+  width: calc(100% / 7);
+  background-color: white;
+}
+
+.key-empty-wide {
+  width: calc(100% / 7 * 0.625);
+}
+
+.key-empty-extra-wide {
+  width: calc(100% / 7 * 1.25);
+}
+
+.key-empty-narrow {
+  width: calc(100% / 7 * 0.25);
+}
+
+.key-black {
+  width: calc(100% / 7 * 0.75);
+  background-color: black;
+}
+
+.key-white.key-down {
+  background-color: hsl(160, 100%, 50%);
+}
+
+.key-black.key-down {
+  background-color: hsl(160, 100%, 30%);
+}
